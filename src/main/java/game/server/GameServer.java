@@ -114,6 +114,17 @@ public class GameServer {
         int exitX = exitPos[0];
         int exitY = exitPos[1];
         
+        // КРИТИЧЕСКАЯ ПРОВЕРКА: Убеждаемся, что финиш достижим от обеих стартовых позиций
+        // Если нет, создаём пути
+        boolean[][] gameCells = maze.convertToGameCellsForCheck();
+        if (!maze.isReachableForCheck(gameCells, startX1, startY1, exitX, exitY)) {
+            maze.createPathToPositionForCheck(gameCells, startX1, startY1, exitX, exitY);
+        }
+        if (!maze.isReachableForCheck(gameCells, startX2, startY2, exitX, exitY)) {
+            maze.createPathToPositionForCheck(gameCells, startX2, startY2, exitX, exitY);
+        }
+        maze.updateFromGameCells(gameCells);
+        
         gameState.initialize(maze, exitX, exitY);
         gameInitialized = true;
         
