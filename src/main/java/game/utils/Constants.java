@@ -25,3 +25,4 @@ public class Constants {
     public static final int INFO_PANEL_HEIGHT = 100;
 }
 
+

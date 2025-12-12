@@ -105,8 +105,12 @@ public class GameServer {
             player2.setPosition(Constants.MAZE_WIDTH - 1, Constants.MAZE_HEIGHT - 1);
         }
         
-        // Генерируем случайный выход на проходимой клетке
-        int[] exitPos = maze.findRandomPassableCell();
+        // Генерируем случайный выход на проходимой клетке с минимальным расстоянием 10-15
+        int startX1 = 0;
+        int startY1 = 0;
+        int startX2 = Constants.MAZE_WIDTH - 1;
+        int startY2 = Constants.MAZE_HEIGHT - 1;
+        int[] exitPos = maze.findRandomPassableCell(startX1, startY1, startX2, startY2);
         int exitX = exitPos[0];
         int exitY = exitPos[1];
         

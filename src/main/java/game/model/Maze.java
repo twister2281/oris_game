@@ -24,20 +24,24 @@ public class Maze {
     }
     
     private void generate() {
+        // Создаём массив для игровых клеток (не внутренних координат лабиринта)
+        // true = стена, false = проход
+        boolean[][] gameCells = new boolean[height][width];
+        
         // Инициализация: все клетки - стены
-        for (int i = 0; i < walls.length; i++) {
-            for (int j = 0; j < walls[i].length; j++) {
-                walls[i][j] = true;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                gameCells[i][j] = true; // Все клетки - стены
             }
         }
         
-        // Используем алгоритм рекурсивного backtracking
+        // Используем алгоритм рекурсивного backtracking для создания проходимого лабиринта
         Stack<int[]> stack = new Stack<>();
-        int startX = 1;
-        int startY = 1;
+        int startX = 0;
+        int startY = 0;
         
-        // Начальная клетка
-        walls[startY][startX] = false;
+        // Начальная клетка - проход
+        gameCells[startY][startX] = false;
         stack.push(new int[]{startX, startY});
         
         while (!stack.isEmpty()) {
@@ -45,8 +49,8 @@ public class Maze {
             int x = current[0];
             int y = current[1];
             
-            // Находим непосещённых соседей
-            int[][] neighbors = getUnvisitedNeighbors(x, y);
+            // Находим непосещённых соседей (через одну клетку)
+            int[][] neighbors = getUnvisitedNeighborsSimple(x, y, gameCells);
             
             if (neighbors.length > 0) {
                 // Выбираем случайного соседа
@@ -57,8 +61,8 @@ public class Maze {
                 // Убираем стену между текущей и следующей клеткой
                 int wallX = (x + nx) / 2;
                 int wallY = (y + ny) / 2;
-                walls[wallY][wallX] = false;
-                walls[ny][nx] = false;
+                gameCells[wallY][wallX] = false; // Убираем стену между клетками
+                gameCells[ny][nx] = false; // Делаем следующую клетку проходом
                 
                 stack.push(new int[]{nx, ny});
             } else {
@@ -66,52 +70,14 @@ public class Maze {
             }
         }
         
-        // Добавляем дополнительные проходы для разнообразия (но сохраняем проходимость)
-        addAdditionalPassages();
-    }
-    
-    /**
-     * Добавляет дополнительные проходы в лабиринт для разнообразия
-     * Гарантирует, что лабиринт остаётся проходимым
-     */
-    private void addAdditionalPassages() {
-        // Добавляем случайные проходы (около 10% от размера лабиринта)
-        int additionalPassages = (width * height) / 10;
+        // Добавляем дополнительные стены для сложности (но сохраняем проходимость)
+        addWallsForComplexity(gameCells);
         
-        for (int i = 0; i < additionalPassages; i++) {
-            // Выбираем случайную позицию для стены
-            int wallX = random.nextInt(width * 2 - 1) + 1;
-            int wallY = random.nextInt(height * 2 - 1) + 1;
-            
-            // Проверяем, что это стена и не граничная
-            if (walls[wallY][wallX] && 
-                wallX > 1 && wallX < width * 2 - 1 &&
-                wallY > 1 && wallY < height * 2 - 1) {
-                
-                // Проверяем, что по обе стороны от стены есть проходы
-                boolean canRemove = false;
-                
-                // Горизонтальная стена
-                if (wallY % 2 == 0 && wallX % 2 == 1) {
-                    if (!walls[wallY - 1][wallX] && !walls[wallY + 1][wallX]) {
-                        canRemove = true;
-                    }
-                }
-                // Вертикальная стена
-                else if (wallX % 2 == 0 && wallY % 2 == 1) {
-                    if (!walls[wallY][wallX - 1] && !walls[wallY][wallX + 1]) {
-                        canRemove = true;
-                    }
-                }
-                
-                if (canRemove) {
-                    walls[wallY][wallX] = false;
-                }
-            }
-        }
+        // Конвертируем игровые клетки в формат внутреннего лабиринта
+        convertToInternalFormat(gameCells);
     }
     
-    private int[][] getUnvisitedNeighbors(int x, int y) {
+    private int[][] getUnvisitedNeighborsSimple(int x, int y, boolean[][] gameCells) {
         java.util.List<int[]> neighbors = new java.util.ArrayList<>();
         int[][] directions = {{0, 2}, {2, 0}, {0, -2}, {-2, 0}};
         
@@ -119,8 +85,8 @@ public class Maze {
             int nx = x + dir[0];
             int ny = y + dir[1];
             
-            if (nx > 0 && nx < width * 2 && ny > 0 && ny < height * 2) {
-                if (walls[ny][nx]) {
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                if (gameCells[ny][nx]) { // Если это стена (непосещённая)
                     neighbors.add(new int[]{nx, ny});
                 }
             }
@@ -128,6 +94,119 @@ public class Maze {
         
         return neighbors.toArray(new int[0][]);
     }
+    
+    /**
+     * Добавляет дополнительные стены для сложности, но проверяет проходимость
+     * Гарантирует, что все клетки остаются достижимыми от стартовых позиций
+     */
+    private void addWallsForComplexity(boolean[][] gameCells) {
+        // Собираем все проходимые клетки (кроме стартовых)
+        java.util.List<int[]> passableCells = new java.util.ArrayList<>();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!gameCells[y][x] && !(x == 0 && y == 0) && !(x == width - 1 && y == height - 1)) {
+                    passableCells.add(new int[]{x, y});
+                }
+            }
+        }
+        
+        // Добавляем случайные стены (около 25% от проходимых клеток)
+        int wallsToAdd = Math.max(5, passableCells.size() / 4);
+        int attempts = 0;
+        int added = 0;
+        
+        // Перемешиваем список для случайности
+        java.util.Collections.shuffle(passableCells, random);
+        
+        for (int[] cell : passableCells) {
+            if (added >= wallsToAdd || attempts >= passableCells.size()) {
+                break;
+            }
+            
+            attempts++;
+            int x = cell[0];
+            int y = cell[1];
+            
+            // Временно ставим стену
+            gameCells[y][x] = true;
+            
+            // Проверяем, что обе стартовые позиции могут достичь друг друга
+            // (это гарантирует, что все клетки достижимы)
+            boolean stillReachable = isReachable(gameCells, 0, 0, width - 1, height - 1);
+            
+            if (stillReachable) {
+                // Стена добавлена успешно
+                added++;
+            } else {
+                // Убираем стену обратно
+                gameCells[y][x] = false;
+            }
+        }
+    }
+    
+    /**
+     * Проверяет, достижима ли точка (x2, y2) из точки (x1, y1) используя BFS
+     */
+    private boolean isReachable(boolean[][] gameCells, int x1, int y1, int x2, int y2) {
+        if (gameCells[y1][x1] || gameCells[y2][x2]) {
+            return false; // Старт или финиш - стена
+        }
+        
+        boolean[][] visited = new boolean[height][width];
+        java.util.Queue<int[]> queue = new java.util.LinkedList<>();
+        queue.offer(new int[]{x1, y1});
+        visited[y1][x1] = true;
+        
+        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            int x = current[0];
+            int y = current[1];
+            
+            if (x == x2 && y == y2) {
+                return true; // Достигли цели
+            }
+            
+            for (int[] dir : directions) {
+                int nx = x + dir[0];
+                int ny = y + dir[1];
+                
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    if (!visited[ny][nx] && !gameCells[ny][nx]) { // Проход и не посещён
+                        visited[ny][nx] = true;
+                        queue.offer(new int[]{nx, ny});
+                    }
+                }
+            }
+        }
+        
+        return false; // Не достигли цели
+    }
+    
+    /**
+     * Конвертирует игровые клетки в формат внутреннего лабиринта
+     */
+    private void convertToInternalFormat(boolean[][] gameCells) {
+        // Инициализация внутреннего формата: все стены
+        for (int i = 0; i < walls.length; i++) {
+            for (int j = 0; j < walls[i].length; j++) {
+                walls[i][j] = true;
+            }
+        }
+        
+        // Заполняем проходы
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!gameCells[y][x]) { // Если это проход
+                    int mazeX = x * 2 + 1;
+                    int mazeY = y * 2 + 1;
+                    walls[mazeY][mazeX] = false;
+                }
+            }
+        }
+    }
+    
     
     public boolean isWall(int x, int y) {
         // Конвертируем координаты игрока в координаты лабиринта
@@ -186,8 +265,9 @@ public class Maze {
     
     /**
      * Находит случайную проходимую клетку в лабиринте
+     * с минимальным расстоянием от стартовых позиций (10-15 клеток)
      */
-    public int[] findRandomPassableCell() {
+    public int[] findRandomPassableCell(int startX1, int startY1, int startX2, int startY2) {
         java.util.List<int[]> passableCells = new java.util.ArrayList<>();
         
         // Собираем все проходимые клетки
@@ -199,24 +279,69 @@ public class Maze {
             }
         }
         
-        // Выбираем случайную, но не слишком близко к краям
         if (passableCells.isEmpty()) {
             return new int[]{width / 2, height / 2};
         }
         
-        // Фильтруем клетки, которые не слишком близко к стартовым позициям
+        // Фильтруем клетки с минимальным расстоянием 10-15 от стартовых позиций
+        int minDistance = 10;
+        int maxDistance = 15;
         java.util.List<int[]> validCells = new java.util.ArrayList<>();
+        
         for (int[] cell : passableCells) {
             int x = cell[0];
             int y = cell[1];
-            // Исключаем углы (стартовые позиции игроков)
-            if (!(x == 0 && y == 0) && !(x == width - 1 && y == height - 1)) {
+            
+            // Исключаем стартовые позиции
+            if ((x == startX1 && y == startY1) || (x == startX2 && y == startY2)) {
+                continue;
+            }
+            
+            // Вычисляем расстояние до обеих стартовых позиций
+            int dist1 = Math.abs(x - startX1) + Math.abs(y - startY1);
+            int dist2 = Math.abs(x - startX2) + Math.abs(y - startY2);
+            
+            // Минимальное расстояние должно быть не менее minDistance
+            int minDist = Math.min(dist1, dist2);
+            
+            if (minDist >= minDistance && minDist <= maxDistance) {
                 validCells.add(cell);
             }
         }
         
+        // Если нет клеток в нужном диапазоне, ищем с минимальным расстоянием >= 10
         if (validCells.isEmpty()) {
-            validCells = passableCells;
+            for (int[] cell : passableCells) {
+                int x = cell[0];
+                int y = cell[1];
+                
+                if ((x == startX1 && y == startY1) || (x == startX2 && y == startY2)) {
+                    continue;
+                }
+                
+                int dist1 = Math.abs(x - startX1) + Math.abs(y - startY1);
+                int dist2 = Math.abs(x - startX2) + Math.abs(y - startY2);
+                int minDist = Math.min(dist1, dist2);
+                
+                if (minDist >= minDistance) {
+                    validCells.add(cell);
+                }
+            }
+        }
+        
+        // Если всё ещё нет, берём любую кроме стартовых
+        if (validCells.isEmpty()) {
+            for (int[] cell : passableCells) {
+                int x = cell[0];
+                int y = cell[1];
+                if (!(x == startX1 && y == startY1) && !(x == startX2 && y == startY2)) {
+                    validCells.add(cell);
+                }
+            }
+        }
+        
+        if (validCells.isEmpty()) {
+            return new int[]{width / 2, height / 2};
         }
         
         return validCells.get(random.nextInt(validCells.size()));
