@@ -107,11 +107,13 @@ public class Maze {
         
         // ФИНАЛЬНАЯ ФИНАЛЬНАЯ ПРОВЕРКА после конвертации
         // Убеждаемся, что стартовые позиции проходимы в финальном формате
+        // (метод convertToInternalFormat уже делает это, но на всякий случай)
         ensureStartPositionsPassable();
     }
     
     /**
      * Гарантирует, что стартовые позиции проходимы в финальном формате
+     * Этот метод вызывается после convertToInternalFormat, который уже гарантирует проходимость
      */
     private void ensureStartPositionsPassable() {
         int startX1 = 0;
@@ -119,26 +121,19 @@ public class Maze {
         int startX2 = width - 1;
         int startY2 = height - 1;
         
-        // Убираем стены в стартовых позициях
+        // Убираем стены в стартовых позициях (дополнительная гарантия)
         int mazeX1 = startX1 * 2 + 1;
         int mazeY1 = startY1 * 2 + 1;
         int mazeX2 = startX2 * 2 + 1;
         int mazeY2 = startY2 * 2 + 1;
         
-        walls[mazeY1][mazeX1] = false;
-        walls[mazeY2][mazeX2] = false;
-        
-        // Убираем стены вокруг стартовых позиций для гарантии проходимости
-        // Только те, которые не нарушают структуру
-        if (mazeX1 > 1) walls[mazeY1][mazeX1 - 1] = false;
-        if (mazeX1 < walls[0].length - 2) walls[mazeY1][mazeX1 + 1] = false;
-        if (mazeY1 > 1) walls[mazeY1 - 1][mazeX1] = false;
-        if (mazeY1 < walls.length - 2) walls[mazeY1 + 1][mazeX1] = false;
-        
-        if (mazeX2 > 1) walls[mazeY2][mazeX2 - 1] = false;
-        if (mazeX2 < walls[0].length - 2) walls[mazeY2][mazeX2 + 1] = false;
-        if (mazeY2 > 1) walls[mazeY2 - 1][mazeX2] = false;
-        if (mazeY2 < walls.length - 2) walls[mazeY2 + 1][mazeX2] = false;
+        // Проверяем границы
+        if (mazeX1 >= 0 && mazeX1 < walls[0].length && mazeY1 >= 0 && mazeY1 < walls.length) {
+            walls[mazeY1][mazeX1] = false;
+        }
+        if (mazeX2 >= 0 && mazeX2 < walls[0].length && mazeY2 >= 0 && mazeY2 < walls.length) {
+            walls[mazeY2][mazeX2] = false;
+        }
     }
     
     private int[][] getUnvisitedNeighborsForGeneration(int x, int y, boolean[][] gameCells, boolean[][] visited) {
@@ -328,17 +323,67 @@ public class Maze {
                     int mazeX = x * 2 + 1;
                     int mazeY = y * 2 + 1;
                     walls[mazeY][mazeX] = false;
+                    
+                    // Создаём проходы к соседним проходимым клеткам
+                    // Вверх
+                    if (y > 0 && !gameCells[y - 1][x]) {
+                        walls[mazeY - 1][mazeX] = false;
+                    }
+                    // Вниз
+                    if (y < height - 1 && !gameCells[y + 1][x]) {
+                        walls[mazeY + 1][mazeX] = false;
+                    }
+                    // Влево
+                    if (x > 0 && !gameCells[y][x - 1]) {
+                        walls[mazeY][mazeX - 1] = false;
+                    }
+                    // Вправо
+                    if (x < width - 1 && !gameCells[y][x + 1]) {
+                        walls[mazeY][mazeX + 1] = false;
+                    }
                 }
             }
         }
+        
+        // КРИТИЧЕСКИ ВАЖНО: Гарантируем проходимость стартовых позиций
+        int startX1 = 0;
+        int startY1 = 0;
+        int startX2 = width - 1;
+        int startY2 = height - 1;
+        
+        int mazeX1 = startX1 * 2 + 1;
+        int mazeY1 = startY1 * 2 + 1;
+        int mazeX2 = startX2 * 2 + 1;
+        int mazeY2 = startY2 * 2 + 1;
+        
+        // Убираем стены в стартовых позициях
+        walls[mazeY1][mazeX1] = false;
+        walls[mazeY2][mazeX2] = false;
+        
+        // Убираем стены вокруг стартовых позиций для гарантии проходимости
+        if (mazeX1 > 0) walls[mazeY1][mazeX1 - 1] = false;
+        if (mazeX1 < walls[0].length - 1) walls[mazeY1][mazeX1 + 1] = false;
+        if (mazeY1 > 0) walls[mazeY1 - 1][mazeX1] = false;
+        if (mazeY1 < walls.length - 1) walls[mazeY1 + 1][mazeX1] = false;
+        
+        if (mazeX2 > 0) walls[mazeY2][mazeX2 - 1] = false;
+        if (mazeX2 < walls[0].length - 1) walls[mazeY2][mazeX2 + 1] = false;
+        if (mazeY2 > 0) walls[mazeY2 - 1][mazeX2] = false;
+        if (mazeY2 < walls.length - 1) walls[mazeY2 + 1][mazeX2] = false;
     }
     
     
     public boolean isWall(int x, int y) {
+        // Проверяем границы
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return true; // Вне границ - стена
+        }
+        
         // Конвертируем координаты игрока в координаты лабиринта
         int mazeX = x * 2 + 1;
         int mazeY = y * 2 + 1;
         
+        // Проверяем границы внутреннего формата
         if (mazeX < 0 || mazeX >= walls[0].length || mazeY < 0 || mazeY >= walls.length) {
             return true; // Вне границ - стена
         }
