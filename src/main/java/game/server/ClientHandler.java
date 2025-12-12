@@ -127,13 +127,13 @@ public class ClientHandler extends Thread {
                         player.setPosition(newX, newY);
                         player.setDirection(direction);
                         
+                        // Отправляем обновление позиции всем (включая сервер)
+                        server.broadcastPosition(pid, newX, newY, direction);
+                        
                         // Проверяем победу
                         if (gameState.checkWin(pid, newX, newY)) {
                             // Отправляем сообщение о конце игры всем
                             server.broadcastGameEnd(pid, gameState.getElapsedTime());
-                        } else {
-                            // Отправляем обновление позиции всем клиентам
-                            server.broadcastPosition(pid, newX, newY, direction);
                         }
                     }
                 }

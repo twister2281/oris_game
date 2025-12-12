@@ -17,6 +17,15 @@ public class GameServer {
     private GameState gameState;
     private boolean gameInitialized;
     private int nextPlayerId;
+    private GameEndListener gameEndListener;
+    
+    public interface GameEndListener {
+        void onGameEnd(int winnerId, long time);
+    }
+    
+    public void setGameEndListener(GameEndListener listener) {
+        this.gameEndListener = listener;
+    }
     
     public GameServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
@@ -96,9 +105,10 @@ public class GameServer {
             player2.setPosition(Constants.MAZE_WIDTH - 1, Constants.MAZE_HEIGHT - 1);
         }
         
-        // Выход в центре лабиринта
-        int exitX = Constants.MAZE_WIDTH / 2;
-        int exitY = Constants.MAZE_HEIGHT / 2;
+        // Генерируем случайный выход на проходимой клетке
+        int[] exitPos = maze.findRandomPassableCell();
+        int exitX = exitPos[0];
+        int exitY = exitPos[1];
         
         gameState.initialize(maze, exitX, exitY);
         gameInitialized = true;
@@ -112,12 +122,28 @@ public class GameServer {
     }
     
     public void broadcastPosition(int playerId, int x, int y, String direction) {
+        // Обновляем позицию в gameState для серверного игрока
+        if (gameState != null) {
+            Player player = gameState.getPlayer(playerId);
+            if (player != null) {
+                player.setPosition(x, y);
+                player.setDirection(direction);
+            }
+        }
+        
+        // Отправляем клиентам
         for (ClientHandler client : clients) {
             client.sendPositionUpdate(playerId, x, y, direction);
         }
     }
     
     public void broadcastGameEnd(int winnerId, long time) {
+        // Уведомляем серверное окно
+        if (gameEndListener != null) {
+            gameEndListener.onGameEnd(winnerId, time);
+        }
+        
+        // Отправляем клиентам
         for (ClientHandler client : clients) {
             client.sendGameEnd(winnerId, time);
         }

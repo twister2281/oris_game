@@ -65,6 +65,50 @@ public class Maze {
                 stack.pop();
             }
         }
+        
+        // Добавляем дополнительные проходы для разнообразия (но сохраняем проходимость)
+        addAdditionalPassages();
+    }
+    
+    /**
+     * Добавляет дополнительные проходы в лабиринт для разнообразия
+     * Гарантирует, что лабиринт остаётся проходимым
+     */
+    private void addAdditionalPassages() {
+        // Добавляем случайные проходы (около 10% от размера лабиринта)
+        int additionalPassages = (width * height) / 10;
+        
+        for (int i = 0; i < additionalPassages; i++) {
+            // Выбираем случайную позицию для стены
+            int wallX = random.nextInt(width * 2 - 1) + 1;
+            int wallY = random.nextInt(height * 2 - 1) + 1;
+            
+            // Проверяем, что это стена и не граничная
+            if (walls[wallY][wallX] && 
+                wallX > 1 && wallX < width * 2 - 1 &&
+                wallY > 1 && wallY < height * 2 - 1) {
+                
+                // Проверяем, что по обе стороны от стены есть проходы
+                boolean canRemove = false;
+                
+                // Горизонтальная стена
+                if (wallY % 2 == 0 && wallX % 2 == 1) {
+                    if (!walls[wallY - 1][wallX] && !walls[wallY + 1][wallX]) {
+                        canRemove = true;
+                    }
+                }
+                // Вертикальная стена
+                else if (wallX % 2 == 0 && wallY % 2 == 1) {
+                    if (!walls[wallY][wallX - 1] && !walls[wallY][wallX + 1]) {
+                        canRemove = true;
+                    }
+                }
+                
+                if (canRemove) {
+                    walls[wallY][wallX] = false;
+                }
+            }
+        }
     }
     
     private int[][] getUnvisitedNeighbors(int x, int y) {
@@ -138,6 +182,44 @@ public class Maze {
     
     public boolean[][] getWalls() {
         return walls;
+    }
+    
+    /**
+     * Находит случайную проходимую клетку в лабиринте
+     */
+    public int[] findRandomPassableCell() {
+        java.util.List<int[]> passableCells = new java.util.ArrayList<>();
+        
+        // Собираем все проходимые клетки
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!isWall(x, y)) {
+                    passableCells.add(new int[]{x, y});
+                }
+            }
+        }
+        
+        // Выбираем случайную, но не слишком близко к краям
+        if (passableCells.isEmpty()) {
+            return new int[]{width / 2, height / 2};
+        }
+        
+        // Фильтруем клетки, которые не слишком близко к стартовым позициям
+        java.util.List<int[]> validCells = new java.util.ArrayList<>();
+        for (int[] cell : passableCells) {
+            int x = cell[0];
+            int y = cell[1];
+            // Исключаем углы (стартовые позиции игроков)
+            if (!(x == 0 && y == 0) && !(x == width - 1 && y == height - 1)) {
+                validCells.add(cell);
+            }
+        }
+        
+        if (validCells.isEmpty()) {
+            validCells = passableCells;
+        }
+        
+        return validCells.get(random.nextInt(validCells.size()));
     }
 }
 

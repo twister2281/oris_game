@@ -80,6 +80,13 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
                 server.addServerPlayer();
                 playerId = 1;
                 
+                // Устанавливаем listener для уведомлений о завершении игры
+                server.setGameEndListener((winnerId, time) -> {
+                    SwingUtilities.invokeLater(() -> {
+                        onGameEnd(winnerId, time);
+                    });
+                });
+                
                 // Запускаем сервер в отдельном потоке
                 new Thread(() -> {
                     server.start();
@@ -272,16 +279,14 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
     @Override
     public void onPositionUpdate(int pid, int x, int y, String direction) {
         SwingUtilities.invokeLater(() -> {
-            if (gameState != null) {
+            if (gameState != null && !gameState.isGameEnded()) {
                 Player player = gameState.getPlayer(pid);
-                if (player != null) {
+                if (player != null && !player.isFinished()) {
                     player.setPosition(x, y);
                     player.setDirection(direction);
                     
-                    if (pid == playerId) {
-                        gamePanel.repaint();
-                        compassPanel.repaint();
-                    }
+                    gamePanel.repaint();
+                    compassPanel.repaint();
                 }
             }
         });
@@ -290,19 +295,23 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
     @Override
     public void onGameEnd(int winnerId, long time) {
         SwingUtilities.invokeLater(() -> {
-            gameStarted = false;
-            infoPanel.showWinner(winnerId, time);
-            infoPanel.stopTimer();
-            
-            if (gameState != null) {
-                Player winner = gameState.getPlayer(winnerId);
-                if (winner != null) {
-                    winner.finish(time);
-                }
-            }
-            
-            gamePanel.repaint();
+            handleGameEnd(winnerId, time);
         });
+    }
+    
+    private void handleGameEnd(int winnerId, long time) {
+        gameStarted = false;
+        infoPanel.showWinner(winnerId, time);
+        infoPanel.stopTimer();
+        
+        if (gameState != null) {
+            Player winner = gameState.getPlayer(winnerId);
+            if (winner != null) {
+                winner.finish(time);
+            }
+        }
+        
+        gamePanel.repaint();
     }
     
     public void updateGameState(GameState newState) {
