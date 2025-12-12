@@ -35,14 +35,21 @@ public class Maze {
             }
         }
         
+        // Гарантируем, что стартовые позиции проходимы
+        int startX1 = 0;
+        int startY1 = 0;
+        int startX2 = width - 1;
+        int startY2 = height - 1;
+        
+        // Обе стартовые позиции - проходы
+        gameCells[startY1][startX1] = false;
+        gameCells[startY2][startX2] = false;
+        
         // Используем алгоритм рекурсивного backtracking для создания проходимого лабиринта
         Stack<int[]> stack = new Stack<>();
-        int startX = 0;
-        int startY = 0;
         
-        // Начальная клетка - проход
-        gameCells[startY][startX] = false;
-        stack.push(new int[]{startX, startY});
+        // Начинаем с первой стартовой позиции
+        stack.push(new int[]{startX1, startY1});
         
         while (!stack.isEmpty()) {
             int[] current = stack.peek();
@@ -68,6 +75,12 @@ public class Maze {
             } else {
                 stack.pop();
             }
+        }
+        
+        // Убеждаемся, что вторая стартовая позиция достижима
+        // Если нет, создаём путь к ней
+        if (!isReachable(gameCells, startX1, startY1, startX2, startY2)) {
+            createPathToPosition(gameCells, startX1, startY1, startX2, startY2);
         }
         
         // Добавляем дополнительные стены для сложности (но сохраняем проходимость)
@@ -96,15 +109,48 @@ public class Maze {
     }
     
     /**
+     * Создаёт путь от одной позиции к другой, если они не достижимы
+     */
+    private void createPathToPosition(boolean[][] gameCells, int fromX, int fromY, int toX, int toY) {
+        // Используем простой алгоритм: идём по прямой, убирая стены
+        int currentX = fromX;
+        int currentY = fromY;
+        
+        while (currentX != toX || currentY != toY) {
+            // Определяем направление движения
+            int dx = Integer.compare(toX, currentX);
+            int dy = Integer.compare(toY, currentY);
+            
+            // Двигаемся по горизонтали или вертикали (приоритет случайный)
+            if (dx != 0 && (dy == 0 || random.nextBoolean())) {
+                currentX += dx;
+            } else if (dy != 0) {
+                currentY += dy;
+            }
+            
+            // Убираем стену в текущей позиции
+            if (currentX >= 0 && currentX < width && currentY >= 0 && currentY < height) {
+                gameCells[currentY][currentX] = false;
+            }
+        }
+    }
+    
+    /**
      * Добавляет дополнительные стены для сложности, но проверяет проходимость
      * Гарантирует, что все клетки остаются достижимыми от стартовых позиций
      */
     private void addWallsForComplexity(boolean[][] gameCells) {
+        // Гарантируем, что стартовые позиции остаются проходимыми
+        int startX1 = 0;
+        int startY1 = 0;
+        int startX2 = width - 1;
+        int startY2 = height - 1;
+        
         // Собираем все проходимые клетки (кроме стартовых)
         java.util.List<int[]> passableCells = new java.util.ArrayList<>();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if (!gameCells[y][x] && !(x == 0 && y == 0) && !(x == width - 1 && y == height - 1)) {
+                if (!gameCells[y][x] && !(x == startX1 && y == startY1) && !(x == startX2 && y == startY2)) {
                     passableCells.add(new int[]{x, y});
                 }
             }
@@ -132,7 +178,7 @@ public class Maze {
             
             // Проверяем, что обе стартовые позиции могут достичь друг друга
             // (это гарантирует, что все клетки достижимы)
-            boolean stillReachable = isReachable(gameCells, 0, 0, width - 1, height - 1);
+            boolean stillReachable = isReachable(gameCells, startX1, startY1, startX2, startY2);
             
             if (stillReachable) {
                 // Стена добавлена успешно
@@ -141,6 +187,14 @@ public class Maze {
                 // Убираем стену обратно
                 gameCells[y][x] = false;
             }
+        }
+        
+        // Финальная проверка: убеждаемся, что стартовые позиции проходимы
+        if (gameCells[startY1][startX1]) {
+            gameCells[startY1][startX1] = false;
+        }
+        if (gameCells[startY2][startX2]) {
+            gameCells[startY2][startX2] = false;
         }
     }
     
