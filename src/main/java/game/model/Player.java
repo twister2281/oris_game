@@ -12,7 +12,7 @@ public class Player {
         this.id = id;
         this.x = x;
         this.y = y;
-        this.direction = "DOWN";
+        this.direction = "ВНИЗ";
         this.finished = false;
         this.finishTime = 0;
     }

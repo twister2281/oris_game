@@ -7,10 +7,3 @@ public enum MessageType {
     PLAYER_MOVE,      // MOVE|playerId|direction
     SYNC_REQUEST      // SYNC|playerId
 }
-
-
-
-
-
-
-

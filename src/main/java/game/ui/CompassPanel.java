@@ -18,7 +18,7 @@ public class CompassPanel extends JPanel {
     public CompassPanel() {
         setPreferredSize(new Dimension(Constants.COMPASS_PANEL_SIZE, Constants.COMPASS_PANEL_SIZE));
         setBackground(new Color(250, 250, 250));
-        setBorder(BorderFactory.createTitledBorder("Compass"));
+        setBorder(BorderFactory.createTitledBorder("Компас"));
         
         currentAngle = 0;
         targetAngle = 0;
@@ -108,7 +108,7 @@ public class CompassPanel extends JPanel {
         g2d.setFont(new Font("Arial", Font.BOLD, 14));
         FontMetrics fm = g2d.getFontMetrics();
         
-        String[] directions = {"N", "E", "S", "W"};
+        String[] directions = {"С", "В", "Ю", "З"};
         int[] angles = {0, 90, 180, 270};
         
         for (int i = 0; i < directions.length; i++) {

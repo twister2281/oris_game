@@ -38,7 +38,7 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
     }
     
     private void initializeUI() {
-        setTitle("Maze Race - " + (isServer ? "Server" : "Client"));
+        setTitle("Гонка в лабиринте - " + (isServer ? "Сервер" : "Клиент"));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         
@@ -93,7 +93,7 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
                 }).start();
                 
                 infoPanel.setConnectionStatus(true);
-                infoPanel.setStatus("Server started. Waiting for client...");
+                infoPanel.setStatus("Сервер запущен. Ожидание клиента...");
                 
                 // Периодически проверяем инициализацию игры
                 new Thread(() -> {
@@ -114,13 +114,13 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
                     }
                 }).start();
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error starting server: " + e.getMessage(), 
-                                             "Error", JOptionPane.ERROR_MESSAGE);
-                System.err.println("Error starting server: " + e.getMessage());
+                JOptionPane.showMessageDialog(this, "Ошибка запуска сервера: " + e.getMessage(), 
+                                             "Ошибка", JOptionPane.ERROR_MESSAGE);
+                System.err.println("Ошибка запуска сервера: " + e.getMessage());
             }
         } else {
             // Подключаемся как клиент
-            String host = JOptionPane.showInputDialog(this, "Enter server address:", "localhost");
+            String host = JOptionPane.showInputDialog(this, "Введите адрес сервера:", "localhost");
             if (host == null || host.trim().isEmpty()) {
                 host = "localhost";
             }
@@ -129,7 +129,7 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
             client.start();
             
             infoPanel.setConnectionStatus(true);
-            infoPanel.setStatus("Connecting to server...");
+            infoPanel.setStatus("Подключение к серверу...");
         }
     }
     
@@ -144,7 +144,7 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
             
             gameStarted = true;
             infoPanel.startTimer();
-            infoPanel.setStatus("Game started! Use arrow keys or WASD to move.");
+            infoPanel.setStatus("Игра началась! Используйте стрелки или WASD для движения.");
             
             gamePanel.requestFocus();
             repaint();
@@ -164,19 +164,19 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_UP:
                     case KeyEvent.VK_W:
-                        direction = "UP";
+                        direction = "ВВЕРХ";
                         break;
                     case KeyEvent.VK_DOWN:
                     case KeyEvent.VK_S:
-                        direction = "DOWN";
+                        direction = "ВНИЗ";
                         break;
                     case KeyEvent.VK_LEFT:
                     case KeyEvent.VK_A:
-                        direction = "LEFT";
+                        direction = "ВЛЕВО";
                         break;
                     case KeyEvent.VK_RIGHT:
                     case KeyEvent.VK_D:
-                        direction = "RIGHT";
+                        direction = "ВПРАВО";
                         break;
                 }
                 
@@ -215,16 +215,16 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
             int newY = player.getY();
             
             switch (direction) {
-                case "UP":
+                case "ВВЕРХ":
                     newY--;
                     break;
-                case "DOWN":
+                case "ВНИЗ":
                     newY++;
                     break;
-                case "LEFT":
+                case "ВЛЕВО":
                     newX--;
                     break;
-                case "RIGHT":
+                case "ВПРАВО":
                     newX++;
                     break;
             }
@@ -269,7 +269,7 @@ public class GameWindow extends JFrame implements GameClient.ClientMessageListen
             
             gameStarted = true;
             infoPanel.startTimer();
-            infoPanel.setStatus("Game started! Use arrow keys or WASD to move.");
+            infoPanel.setStatus("Игра началась! Используйте стрелки или WASD для движения.");
             
             gamePanel.requestFocus();
             repaint();

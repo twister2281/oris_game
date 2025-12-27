@@ -47,7 +47,7 @@ public class GameClient extends Thread {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             running = true;
             
-            System.out.println("Connected to server: " + host + ":" + port);
+            System.out.println("Подключено к серверу: " + host + ":" + port);
             
             // Обрабатываем сообщения от сервера
             while (running) {
@@ -59,7 +59,7 @@ public class GameClient extends Thread {
                 handleMessage(message);
             }
         } catch (IOException e) {
-            System.err.println("Error in client: " + e.getMessage());
+            System.err.println("Ошибка в клиенте: " + e.getMessage());
             if (listener != null) {
                 // Уведомляем о разрыве соединения
             }
@@ -109,7 +109,7 @@ public class GameClient extends Thread {
                 listener.onGameStart(pid, seed, startX, startY, exitX, exitY);
             }
         } catch (NumberFormatException e) {
-            System.err.println("Invalid game start data: " + e.getMessage());
+            System.err.println("Неверные данные начала игры: " + e.getMessage());
         }
     }
     
@@ -135,7 +135,7 @@ public class GameClient extends Thread {
                 }
             }
         } catch (NumberFormatException e) {
-            System.err.println("Invalid position data: " + e.getMessage());
+            System.err.println("Неверные данные позиции: " + e.getMessage());
         }
     }
     
@@ -153,7 +153,7 @@ public class GameClient extends Thread {
                 listener.onGameEnd(winnerId, time);
             }
         } catch (NumberFormatException e) {
-            System.err.println("Invalid game end data: " + e.getMessage());
+            System.err.println("Неверные данные окончания игры: " + e.getMessage());
         }
     }
     
@@ -195,7 +195,7 @@ public class GameClient extends Thread {
             if (out != null) out.close();
             if (socket != null) socket.close();
         } catch (IOException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
+            System.err.println("Ошибка закрытия соединения: " + e.getMessage());
         }
     }
 }

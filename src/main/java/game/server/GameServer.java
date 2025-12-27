@@ -32,7 +32,7 @@ public class GameServer {
         clients = new ArrayList<>();
         nextPlayerId = 1;
         gameInitialized = false;
-        System.out.println("Server started on port " + port);
+        System.out.println("Сервер запущен на порту " + port);
     }
     
     public void start() {
@@ -48,20 +48,20 @@ public class GameServer {
     
     private void waitForServerPlayer() {
         // Серверный игрок уже здесь, создаём для него игрока с ID 1
-        System.out.println("Waiting for server player to be ready...");
+        System.out.println("Ожидание готовности серверного игрока...");
     }
     
     private void waitForClient() {
         try {
-            System.out.println("Waiting for client to connect...");
+            System.out.println("Ожидание подключения клиента...");
             Socket clientSocket = serverSocket.accept();
-            System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
+            System.out.println("Клиент подключен: " + clientSocket.getRemoteSocketAddress());
             
             ClientHandler clientHandler = new ClientHandler(clientSocket, this, 2);
             clients.add(clientHandler);
             clientHandler.start();
         } catch (IOException e) {
-            System.err.println("Error accepting client: " + e.getMessage());
+            System.err.println("Ошибка принятия клиента: " + e.getMessage());
         }
     }
     
@@ -81,7 +81,7 @@ public class GameServer {
             return;
         }
         
-        // Генерируем лабиринт
+        // Создаём лабиринт с использованием seed для синхронизации с клиентом
         long seed = System.currentTimeMillis();
         Maze maze = new Maze(Constants.MAZE_WIDTH, Constants.MAZE_HEIGHT, seed);
         
@@ -105,25 +105,10 @@ public class GameServer {
             player2.setPosition(Constants.MAZE_WIDTH - 1, Constants.MAZE_HEIGHT - 1);
         }
         
-        // Генерируем случайный выход на проходимой клетке с минимальным расстоянием 10-15
-        int startX1 = 0;
-        int startY1 = 0;
-        int startX2 = Constants.MAZE_WIDTH - 1;
-        int startY2 = Constants.MAZE_HEIGHT - 1;
-        int[] exitPos = maze.findRandomPassableCell(startX1, startY1, startX2, startY2);
+        // Генерируем случайную позицию финиша (минимум 10 блоков от стартовых позиций)
+        int[] exitPos = maze.getFixedExitPosition();
         int exitX = exitPos[0];
         int exitY = exitPos[1];
-        
-        // КРИТИЧЕСКАЯ ПРОВЕРКА: Убеждаемся, что финиш достижим от обеих стартовых позиций
-        // Если нет, создаём пути
-        boolean[][] gameCells = maze.convertToGameCellsForCheck();
-        if (!maze.isReachableForCheck(gameCells, startX1, startY1, exitX, exitY)) {
-            maze.createPathToPositionForCheck(gameCells, startX1, startY1, exitX, exitY);
-        }
-        if (!maze.isReachableForCheck(gameCells, startX2, startY2, exitX, exitY)) {
-            maze.createPathToPositionForCheck(gameCells, startX2, startY2, exitX, exitY);
-        }
-        maze.updateFromGameCells(gameCells);
         
         gameState.initialize(maze, exitX, exitY);
         gameInitialized = true;
@@ -133,7 +118,7 @@ public class GameServer {
             client.sendGameStart();
         }
         
-        System.out.println("Game initialized!");
+        System.out.println("Игра инициализирована!");
     }
     
     public void broadcastPosition(int playerId, int x, int y, String direction) {
@@ -170,7 +155,7 @@ public class GameServer {
     
     public void removeClient(ClientHandler client) {
         clients.remove(client);
-        System.out.println("Client disconnected: Player " + client.getPlayerId());
+        System.out.println("Клиент отключен: Игрок " + client.getPlayerId());
     }
     
     public void stop() {
@@ -182,7 +167,7 @@ public class GameServer {
                 serverSocket.close();
             }
         } catch (IOException e) {
-            System.err.println("Error stopping server: " + e.getMessage());
+            System.err.println("Ошибка остановки сервера: " + e.getMessage());
         }
     }
 }

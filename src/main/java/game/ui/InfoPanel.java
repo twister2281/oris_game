@@ -18,13 +18,13 @@ public class InfoPanel extends JPanel {
         setPreferredSize(new Dimension(Constants.WINDOW_WIDTH, Constants.INFO_PANEL_HEIGHT));
         setBackground(new Color(240, 240, 240));
         
-        timeLabel = new JLabel("Time: 00:00");
+        timeLabel = new JLabel("Время: 00:00");
         timeLabel.setFont(new Font("Arial", Font.BOLD, 16));
         
-        statusLabel = new JLabel("Waiting for game to start...");
+        statusLabel = new JLabel("Ожидание начала игры...");
         statusLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         
-        connectionLabel = new JLabel("Disconnected");
+        connectionLabel = new JLabel("Отключено");
         connectionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         connectionLabel.setForeground(Color.RED);
         
@@ -53,7 +53,7 @@ public class InfoPanel extends JPanel {
             long seconds = elapsed / 1000;
             long minutes = seconds / 60;
             seconds = seconds % 60;
-            timeLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
+            timeLabel.setText(String.format("Время: %02d:%02d", minutes, seconds));
         }
     }
     
@@ -63,10 +63,10 @@ public class InfoPanel extends JPanel {
     
     public void setConnectionStatus(boolean connected) {
         if (connected) {
-            connectionLabel.setText("Connected");
+            connectionLabel.setText("Подключено");
             connectionLabel.setForeground(new Color(0, 150, 0));
         } else {
-            connectionLabel.setText("Disconnected");
+            connectionLabel.setText("Отключено");
             connectionLabel.setForeground(Color.RED);
         }
     }
@@ -78,10 +78,10 @@ public class InfoPanel extends JPanel {
         seconds = seconds % 60;
         
         if (winnerId > 0) {
-            statusLabel.setText(String.format("Player %d won! Time: %02d:%02d", winnerId, minutes, seconds));
+            statusLabel.setText(String.format("Игрок %d победил! Время: %02d:%02d", winnerId, minutes, seconds));
             statusLabel.setForeground(new Color(0, 150, 0));
         } else {
-            statusLabel.setText("Game ended");
+            statusLabel.setText("Игра окончена");
         }
     }
 }

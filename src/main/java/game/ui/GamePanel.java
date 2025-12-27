@@ -150,19 +150,19 @@ public class GamePanel extends JPanel {
             int[] yPoints = new int[3];
             
             switch (player.getDirection()) {
-                case "UP":
+                case "ВВЕРХ":
                     xPoints = new int[]{centerX, centerX - 5, centerX + 5};
                     yPoints = new int[]{centerY - 8, centerY + 2, centerY + 2};
                     break;
-                case "DOWN":
+                case "ВНИЗ":
                     xPoints = new int[]{centerX, centerX - 5, centerX + 5};
                     yPoints = new int[]{centerY + 8, centerY - 2, centerY - 2};
                     break;
-                case "LEFT":
+                case "ВЛЕВО":
                     xPoints = new int[]{centerX - 8, centerX + 2, centerX + 2};
                     yPoints = new int[]{centerY, centerY - 5, centerY + 5};
                     break;
-                case "RIGHT":
+                case "ВПРАВО":
                     xPoints = new int[]{centerX + 8, centerX - 2, centerX - 2};
                     yPoints = new int[]{centerY, centerY - 5, centerY + 5};
                     break;
@@ -190,7 +190,7 @@ public class GamePanel extends JPanel {
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
         FontMetrics fm = g2d.getFontMetrics();
-        String text = "Waiting for game to start...";
+        String text = "Ожидание начала игры...";
         int x = (getWidth() - fm.stringWidth(text)) / 2;
         int y = getHeight() / 2;
         g2d.drawString(text, x, y);

@@ -32,7 +32,7 @@ public class ClientHandler extends Thread {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (IOException e) {
-            System.err.println("Error creating streams: " + e.getMessage());
+            System.err.println("Ошибка создания потоков: " + e.getMessage());
         }
     }
     
@@ -52,7 +52,7 @@ public class ClientHandler extends Thread {
                 handleMessage(message);
             }
         } catch (IOException e) {
-            System.err.println("Error in client handler: " + e.getMessage());
+            System.err.println("Ошибка в обработчике клиента: " + e.getMessage());
         } finally {
             close();
         }
@@ -110,16 +110,16 @@ public class ClientHandler extends Thread {
                         int newY = player.getY();
                         
                         switch (direction) {
-                            case "UP":
+                            case "ВВЕРХ":
                                 newY--;
                                 break;
-                            case "DOWN":
+                            case "ВНИЗ":
                                 newY++;
                                 break;
-                            case "LEFT":
+                            case "ВЛЕВО":
                                 newX--;
                                 break;
-                            case "RIGHT":
+                            case "ВПРАВО":
                                 newX++;
                                 break;
                         }
@@ -139,7 +139,7 @@ public class ClientHandler extends Thread {
                 }
             }
         } catch (NumberFormatException e) {
-            System.err.println("Invalid player ID in move message");
+            System.err.println("Неверный ID игрока в сообщении о движении");
         }
     }
     
@@ -182,7 +182,7 @@ public class ClientHandler extends Thread {
             if (out != null) out.close();
             if (socket != null) socket.close();
         } catch (IOException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
+            System.err.println("Ошибка закрытия соединения: " + e.getMessage());
         }
         server.removeClient(this);
     }

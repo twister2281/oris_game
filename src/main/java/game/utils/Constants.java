@@ -2,8 +2,8 @@ package game.utils;
 
 public class Constants {
     // Размеры лабиринта
-    public static final int MAZE_WIDTH = 20;
-    public static final int MAZE_HEIGHT = 20;
+    public static final int MAZE_WIDTH = 40;
+    public static final int MAZE_HEIGHT = 50;
     
     // Размеры клетки в пикселях
     public static final int CELL_SIZE = 30;
